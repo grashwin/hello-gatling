@@ -1,0 +1,35 @@
+apply plugin: "scala"
+apply plugin: "idea"
+apply plugin: "java"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile "org.scala-lang:scala-library:2.12.8"
+    testCompile "org.scala-lang:scala-compiler:2.12.8"
+    testCompile "io.gatling:gatling-app:3.2.1"
+    testCompile "io.gatling:gatling-recorder:3.2.1"
+    testCompile "io.gatling.highcharts:gatling-charts-highcharts:3.2.1"
+}
+
+task runGatling(type: JavaExec, dependsOn: [clean, build]) {
+    String binFolder = project.sourceSets.test.output.classesDirs
+            .filter { it.parentFile.name == "out" }.singleFile.absolutePath
+    String simulation = project.hasProperty("simulation") ? project.property("simulation") : "ListHappyPathSimulation"
+
+    classpath = project.configurations.testRuntime
+    main = "io.gatling.app.Gatling"
+    args = ["-s", simulation,
+            "-rsf", sourceSets.test.output.resourcesDir,
+            "-rf", "${buildDir}/gatling-results",
+            "-bf", binFolder]
+}
+
+group 'com.last.bench.gatling'
+version '1.0-SNAPSHOT'
+
